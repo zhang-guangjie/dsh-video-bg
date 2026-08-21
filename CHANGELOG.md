@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 (2026-08-21)
+
+- 内置默认背景视频 `media/background.mp4`（1080p30、约 34MB，由 4K 原片压制），装完开箱即用。
+
 ## 0.3.0 (2026-08-21)
 
 - 声明 `dsh.bundle.patch`：支持 `dsh plugin add github:…/dsh-video-bg` 一条命令安装，

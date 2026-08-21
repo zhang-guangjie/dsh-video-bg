@@ -49,9 +49,12 @@ dsh plugin --profile desktop add github:<你的GitHub用户名>/dsh-video-bg
   ```
 - 或者设置环境变量 `DSH_VIDEO_BG_PATH` 指向你的视频。
 
-**想给所有使用者内置一个默认视频**：把一个压缩过的小视频（建议 < 20MB）放进仓库的
-`media/background.mp4` 再发布。注意 GitHub 单文件上限 100MB，仓库里不要放几百 MB 的
-原片；背景视频本来静音，用 HandBrake / ffmpeg 压到 720p、1–2 Mbps 就足够了。
+**内置默认视频**：仓库自带 `media/background.mp4`（1080p30、约 34MB，由 4K 原片压制；
+背景本来就静音、被遮罩覆盖，画质差异不可见），装完开箱即用。
+
+**想替换默认视频**：把压缩过的小视频（建议 < 50MB）命名 `background.mp4` 覆盖
+`media/` 下的文件再发布。注意 GitHub 单文件上限 100MB，不要提交几百 MB 的原片；
+用 HandBrake / ffmpeg 压到 1080p、CRF 26 左右即可。
 
 ## 界面半透明原理（为什么是 token 重映射）
 
@@ -73,7 +76,7 @@ dsh-video-bg/
   cordis.patch.yml     # bundle patch：把插件行插入 profile roster
   lib/index.js         # 宿主侧：/video-bg/media（Range 流式）+ /video-bg/status
   lib/client.js        # 浏览器侧：视频背景 + 控制条 + 半透明 CSS
-  media/background.mp4 # 可选：内置默认背景视频（缺失时优雅降级）
+  media/background.mp4 # 内置默认背景视频（1080p30，~34MB，可替换）
 ```
 
 ## 卸载
@@ -88,4 +91,4 @@ dsh plugin --profile web remove @local/dsh-video-bg
 - 视频始终静音（浏览器自动播放策略 + 背景视频通常不应出声）。
 - 视频文件在宿主机上读取；改路径后需重启宿主进程或重载插件配置。
 - 已启用其它皮肤时，皮肤的不透明表面可能盖住视频（皮肤优先）。
-- 默认 `media/background.mp4` 未随包提供时背景不显示，控制条会提示如何配置。
+- 仓库内置默认背景视频（`media/background.mp4`）；替换它或配置 `videoPath` 即可换成自己的视频。

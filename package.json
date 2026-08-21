@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-video-bg",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "DSH GUI 视频背景插件：把本地视频作为对话背景循环播放，带暂停/播放与透明度/遮罩控制。默认解析包内 media/background.mp4（缺失时优雅降级），支持 videoPath 配置与环境变量覆盖。",
   "type": "module",
   "main": "lib/index.js",

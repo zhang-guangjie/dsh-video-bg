@@ -1,94 +1,177 @@
 # dsh-video-bg
-（什么鲸鱼娘桌宠之类的真的弱爆了。。。就干扰工作而言，我的插件是压倒性的）
-把本地视频作为 DSH 对话界面背景循环播放的插件，带播放/暂停与外观控制。
-兼容 DSH 一般 web 界面（`dsh web`）与 DSH Desktop——两者渲染的是同一个 web app，
-插件以相同方式注入。
 
-## 功能
+English | [中文](README.zh.md)
 
-- 背景视频：固定全屏 `<video>`（`z-index: -1`）循环播放，`object-fit: cover` 填满窗口；
-- 暂停/播放：右下角浮动控制条上的 ⏸/▶ 按钮；
-- 不透明度滑块（10–100%）：控制视频本身的透明度；
-- 遮罩滑块（0–70%）：在视频与界面之间加暗色遮罩，提升文字可读性；
-- 状态持久化：暂停状态、两个滑块值存 `localStorage`（键 `dsh.videoBg.v1`）；
-- 界面半透明化：通过重映射 dsh 设计 token（`--dsw-alias-bg-base`、
-  `--dsw-specific-sidebar-fill`、`--dsw-specific-input-major` 等）为半透明色，
-  让所有引用这些 token 的面板自动透出视频，气泡/输入框保持近不透明以保证可读性。
+Loop a local video as the background of the DeepSeek Harness chat UI — on the
+plain Web surface (`dsh web`) and inside DSH Desktop, which renders the same web
+app. The panels become translucent so the video shows through, while chat
+bubbles and the composer stay readable.
 
-## 安装（一条命令，无需改任何配置文件）
+![Background video with the floating control panel open](assets/screenshot-1.png)
 
-```sh
-# web 界面
-dsh plugin --profile web add github:<你的GitHub用户名>/dsh-video-bg
-# DSH Desktop
-dsh plugin --profile desktop add github:<你的GitHub用户名>/dsh-video-bg
-```
+## Features
 
-插件声明了 `dsh.bundle.patch`，`add` 后会自动进入 profile 的 bundle 层并挂载，
-**不需要**手工往 `cordis.patch.yml` 里加行。打包版（DSH Desktop）的配置 watcher
-不生效，**装完后需完全退出并重启 DSH Desktop**；`dsh web` 独立启动的界面同样生效。
+- **Background video**: a fixed, full-viewport `<video>` painted at `z-index: -1`
+  and streamed from the host over HTTP, so a multi-hundred-MB file plays without
+  ever being uploaded. HTTP Range (`206`/`416`) support lets the browser seek and
+  read ahead.
+- **Translucent UI**: the shell's design tokens (`--dsw-alias-bg-base`,
+  `--dsw-specific-sidebar-fill`, `--dsw-specific-input-major`, …) are remapped to
+  semi-transparent colors for both light and dark themes, so every surface that
+  uses a token becomes translucent automatically. Chat bubbles and the composer
+  keep near-opaque fills.
+- **Floating control** (top-right): play/pause, video opacity, dark scrim for
+  contrast, fit (`cover`/`contain`), and collapse. Choices persist in
+  `localStorage` (`dsh.videoBg.v3`); the video pauses when the window is hidden.
+- **Clear failures**: a missing or unreadable file shows a warning badge and a
+  console diagnostic instead of silently doing nothing.
+- **Local only**: video bytes never leave the machine. The plugin registers two
+  loopback HTTP routes on the existing DSH web server; no external service, no
+  telemetry.
 
-## 默认视频与自定义视频
+![Collapsed control; more of the video is visible](assets/screenshot-2.png)
 
-视频**不上传**：字节始终留在本机，宿主进程通过 `/video-bg/media` 路由流式转发给
-浏览器（支持 HTTP Range，可拖动进度条/无缝 seek）。
+## Requirements
 
-默认视频路径解析顺序：
+- DeepSeek Harness **0.2.x** (`engines.dsh` in `package.json`), Web or Desktop.
+  The bundle is validated against the installed runtime before it loads.
+- Node 20+ (the host half only uses `node:fs`, `node:path`, `node:url`).
+- A video file readable by the **host** process (not the browser). MP4/WebM/MOV/
+  MKV/AVI/OGG/TS are recognized; anything else is served as `video/mp4`.
 
-1. 插件配置 `videoPath`（见下）；
-2. 环境变量 `DSH_VIDEO_BG_PATH`；
-3. 包内自带 `media/background.mp4`（随插件一起分发；文件缺失时优雅降级，控制条显示 ⚠ 提示）。
+## Install
 
-**换成自己的视频**（二选一）：
-
-- 在 profile 的 `cordis.patch.yml` 里加一个配置覆盖（无需动插件）：
-  ```yaml
-  - id: ui-video-bg
-    config:
-      videoPath: 'D:\你的视频.mp4'
-  ```
-- 或者设置环境变量 `DSH_VIDEO_BG_PATH` 指向你的视频。
-
-**内置默认视频**：仓库自带 `media/background.mp4`（1080p30、约 34MB，由 4K 原片压制；
-背景本来就静音、被遮罩覆盖，画质差异不可见），装完开箱即用。
-
-**想替换默认视频**：把压缩过的小视频（建议 < 50MB）命名 `background.mp4` 覆盖
-`media/` 下的文件再发布。注意 GitHub 单文件上限 100MB，不要提交几百 MB 的原片；
-用 HandBrake / ffmpeg 压到 1080p、CRF 26 左右即可。
-
-## 界面半透明原理（为什么是 token 重映射）
-
-v0.1 用「列外壳选择器透明化」（`[data-pane=…]`、`[data-dsh-frame]`）来露出视频，
-但该 UI 真正不透明的表面在列内部、使用哈希 css-module 类名的组件上
-（如对话区根部 `.wSkVaW_root` 直接 `background: var(--dsw-alias-bg-base)`），
-v0.1 的 CSS 覆盖不到它们，视频被整个盖住。
-
-v0.2 起采用官方皮肤系统（blue-fantasy/whale-song）验证过的配方：
-给 `<body>` 打 `data-dsh-video-bg` 属性，把 dsh 设计 token 直接重映射为半透明色
-（含 `data-ds-dark-theme` 暗色变体），任何引用 token 的表面都会自动变透。
-视频层保持在 `z-index: -1`，透出后即为对话背景。
-
-## 目录结构
-
-```
-dsh-video-bg/
-  package.json         # dsh.bundle.patch + dsh.client 声明（双面插件，bundle 层）
-  cordis.patch.yml     # bundle patch：把插件行插入 profile roster
-  lib/index.js         # 宿主侧：/video-bg/media（Range 流式）+ /video-bg/status
-  lib/client.js        # 浏览器侧：视频背景 + 控制条 + 半透明 CSS
-  media/background.mp4 # 内置默认背景视频（1080p30，~34MB，可替换）
-```
-
-## 卸载
+The package is a normal DSH bundle, so any of these work:
 
 ```sh
-dsh plugin --profile desktop remove @local/dsh-video-bg
-dsh plugin --profile web remove @local/dsh-video-bg
+# From GitHub (plain JavaScript — no build step, no build-script approval)
+dsh plugin --profile desktop add github:zhang-guangjie/dsh-video-bg
+dsh plugin --profile web add github:zhang-guangjie/dsh-video-bg
+
+# From a local checkout (useful while developing)
+dsh plugin --profile desktop add link:/absolute/path/to/dsh-video-bg
+
+# From npm, once published
+dsh plugin --profile desktop add dsh-video-bg
 ```
 
-## 限制
+You can also install it from the GUI's plugin manager (Plugins → install /
+browse). Installing a bundle selects it in `dsh.profile.bundles` automatically —
+do not add the row by hand.
 
-- 视频始终静音（浏览器自动播放策略 + 背景视频通常不应出声）。
-- 视频文件在宿主机上读取；改路径后需重启宿主进程或重载插件配置。
-- 已启用其它皮肤时，皮肤的不透明表面可能盖住视频（皮肤优先）。
-- 仓库内置默认背景视频（`media/background.mp4`）；替换它或配置 `videoPath` 即可换成自己的视频。
+**Desktop note:** with the shipped profile, a newly installed bundle is applied
+live (the running composition recomposes and the page receives the new client
+entry). If your profile is startup-only, fully quit and restart DSH Desktop once.
+
+## Configure the video
+
+Resolution order for the file:
+
+1. plugin row config `videoPath`;
+2. environment variable `DSH_VIDEO_BG_PATH`;
+3. the bundled `media/background.mp4` (a small default clip).
+
+Set `videoPath` in your profile's own patch layer
+(`$DSH_HOME/profiles/<profile>/cordis.patch.yml`):
+
+```yaml
+- id: ui-video-bg
+  config:
+    videoPath: 'D:\my-video.mp4'   # any local path; ~ is expanded
+    fit: cover                     # cover | contain
+    opacity: 55                    # initial video opacity, 0-100
+    veil: 25                       # initial scrim, 0-100
+```
+
+- `videoPath` and `fit` are read by the host; `opacity`/`veil` are only defaults
+  for a browser that has no saved slider values yet (the control's own values win
+  afterwards).
+- The row id is `ui-video-bg`; changing the config hot-reloads the plugin when
+  HMR is enabled.
+- Environment alternative: set `DSH_VIDEO_BG_PATH` before starting DSH.
+
+## Using it
+
+The floating control at the top-right has:
+
+| Control | Effect |
+|---|---|
+| ▶ / ⏸ | Pause / resume the background video |
+| 不透明度 / Opacity | Video opacity (0–100%), persisted |
+| 遮罩 / Scrim | Dark veil between video and UI (0–100%), persisted |
+| 填充 / Fit | `cover` (fill the window) or `contain` (show the whole frame) |
+| ▴ / ▾ | Collapse / expand the settings panel |
+
+The badge next to the toggle reports buffering and file errors. A missing file is
+also reported by `GET /video-bg/status` and logged by the host.
+
+## How it works
+
+- **Host half** (`lib/index.js`, exported from the package root) declares
+  `inject = ['webServer']` and registers a prefix route:
+  - `GET/HEAD /video-bg/media` — streams the configured file with single-range
+    support and a revision-based cache key (`?v=<size>-<mtime>`), so a changed
+    file is fetched again instead of served from a stale media cache.
+  - `GET /video-bg/status` — JSON with `ok`, `rev`, `size`, `mime`, the effective
+    path/source and the configured defaults.
+- **Client half** (`lib/client.js`, exported as `./client`) is a lazy
+  `window.__ModuleLoader__.load({ id, factory })` bundle. `apply(ctx)` mounts
+  everything inside `ctx.effect(...)`, so disabling the plugin or hot-replacing it
+  removes the attribute, styles, video, scrim and control.
+- **Both surfaces**: the browser requests the routes same-origin; DSH Desktop
+  serves the document from `dsh-app://app/` and forwards every other path to the
+  same authenticated loopback host, so both work unchanged. All URLs in the
+  client are document-relative (`video-bg/media`), never absolute.
+
+## Privacy and security
+
+- The video is read by the host process and served **only** on the loopback web
+  server that DSH already runs for the GUI. Nothing is uploaded, and the plugin
+  makes no outbound requests.
+- No credentials, cookies, or environment values are read or exposed. The status
+  endpoint reveals the local path of the configured video, which the GUI already
+  shows in the control tooltip.
+- `videoPath` is configuration, not user input: treat the profile patch as
+  trusted configuration, like any other DSH row config.
+
+## Compatibility and market metadata
+
+- `dsh.bundle.patch` → `cordis.patch.yml` inserts the `ui-video-bg` row.
+- `dsh.client.platform: "web"` + `exports["./client"]` → served by the client
+  module system.
+- `engines.dsh` and `peerDependencies` gate the bundle to the matching DSH
+  runtime; the host half imports no `@deepseek-ai/*` package, it only consumes the
+  injected `webServer` service.
+- Display metadata lives in `locale/en.json` / `locale/zh.json`, the icon in
+  `assets/icon.svg`, and the storefront screenshots in `screenshots.json`.
+- No build step is required, so GitHub installs need no `allowBuilds` approval.
+
+## Troubleshooting
+
+| Symptom | Check |
+|---|---|
+| Warning badge, no video | `GET /video-bg/status` — `error: "missing"`/`"unreadable"` names the cause; fix `videoPath` |
+| Video plays but is barely visible | raise opacity, lower the scrim, or pick `contain`/a brighter clip |
+| Another skin/plugin covers the video | skins that hardcode opaque surfaces can out-paint the token remap; disable the skin or the other plugin |
+| Just installed, nothing appears | the profile may be startup-only — fully restart DSH; on Web reload the page |
+| Large file takes a moment to start | the browser fetches the first ranges from disk; the rest streams with range requests |
+
+## Development
+
+```sh
+# syntax check (plain JavaScript, no build)
+node --check lib/index.js
+node --check lib/client.js
+
+# install into a test profile and boot the Web surface on a spare port
+dsh plugin --profile mytest add link:/absolute/path/to/dsh-video-bg
+dsh --profile mytest --no-open --port 0
+```
+
+The host and client contracts are documented in the official DSH references for
+client modules and the web server; this package intentionally has no runtime
+dependencies.
+
+## License
+
+MIT

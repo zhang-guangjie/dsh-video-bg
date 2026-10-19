@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Video Background">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2436"/>
+      <stop offset="0.55" stop-color="#0d1220"/>
+      <stop offset="1" stop-color="#24405f"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4d93f8"/>
+      <stop offset="1" stop-color="#7aaaff"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <rect x="18" y="26" width="92" height="76" rx="14" fill="none" stroke="#8ea2c6" stroke-opacity="0.35" stroke-width="2"/>
+  <rect x="26" y="34" width="6" height="60" rx="3" fill="#8ea2c6" fill-opacity="0.35"/>
+  <rect x="96" y="34" width="6" height="60" rx="3" fill="#8ea2c6" fill-opacity="0.35"/>
+  <circle cx="64" cy="64" r="25" fill="url(#glow)" fill-opacity="0.18"/>
+  <path d="M55 50.5c0-2.3 2.5-3.7 4.5-2.6l19 11.4c1.9 1.1 1.9 3.9 0 5l-19 11.4c-2 1.1-4.5-0.3-4.5-2.6z" fill="#dbeafe"/>
+  <circle cx="64" cy="64" r="34" fill="none" stroke="#7aaaff" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="4 7"/>
+</svg>

@@ -1,12 +1,15 @@
-# dsh-video-bg bundle patch: inserts the dual-face plugin row into the profile
-# roster. The row is a bare plugin by package name: the node half (exports ".")
-# runs in the host process (streams the local video over /video-bg/media), and
-# the `dsh.client` declaration in package.json makes the browser half (exports
-# "./client", served at /plugins/@local/dsh-video-bg/client.js) load in the GUI.
+# dsh-video-bg bundle patch: inserts the plugin into the profile roster.
 #
-# Install with:
-#   dsh plugin --profile desktop add link:D:/deepseek harness/plugins/dsh-video-bg
-#   dsh plugin --profile web add link:D:/deepseek harness/plugins/dsh-video-bg
+# The row is a bare plugin by package name. The package root (`exports["."]`)
+# is the host half: it serves the local video over `/video-bg/media` with HTTP
+# Range support. `dsh.client` in package.json serves the browser half from
+# `exports["./client"]` through the DSH client-module route.
+#
+# Users configure it from their own profile patch (`cordis.patch.yml`):
+#
+#   - id: ui-video-bg
+#     config:
+#       videoPath: 'D:\my-video.mp4'
 - insert:
     - id: ui-video-bg
-      name: '@local/dsh-video-bg'
+      name: dsh-video-bg

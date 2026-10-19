@@ -1,29 +1,66 @@
 {
-  "name": "@local/dsh-video-bg",
-  "version": "0.3.1",
-  "description": "DSH GUI 视频背景插件：把本地视频作为对话背景循环播放，带暂停/播放与透明度/遮罩控制。默认解析包内 media/background.mp4（缺失时优雅降级），支持 videoPath 配置与环境变量覆盖。",
+  "name": "dsh-video-bg",
+  "version": "0.4.0",
+  "description": "Play a local video as the DeepSeek Harness Web/Desktop chat background, with play/pause, opacity and scrim controls.",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "./lib/index.js",
+  "icon": "./assets/icon.svg",
   "exports": {
     ".": "./lib/index.js",
     "./client": "./lib/client.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "lib",
+    "media",
+    "locale",
+    "assets",
+    "cordis.patch.yml",
+    "screenshots.json",
+    "README.md",
+    "README.zh.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "dsh",
+    "video",
+    "background",
+    "wallpaper",
+    "theme"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhang-guangjie/dsh-video-bg.git"
+  },
+  "homepage": "https://github.com/zhang-guangjie/dsh-video-bg#readme",
+  "bugs": {
+    "url": "https://github.com/zhang-guangjie/dsh-video-bg/issues"
+  },
+  "engines": {
+    "node": ">=20",
+    "dsh": ">=0.2.0-rc.2 <0.2.1-0 || >=0.2.1-rc.0 <0.3.0-0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.4",
+    "@deepseek-ai/dsh-host-webserver": ">=0.2.0-rc.2 <0.2.1-0 || >=0.2.1-rc.0 <0.3.0-0"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-host-webserver": {
+      "optional": true
+    }
   },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
     },
     "client": {
-      "inject": [],
       "platform": "web"
     }
-  },
-  "license": "MIT",
-  "files": [
-    "lib",
-    "media",
-    "cordis.patch.yml",
-    "README.md",
-    "LICENSE"
-  ]
+  }
 }

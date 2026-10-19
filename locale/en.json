@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Video Background",
+    "description": "Loop a local video behind the chat UI, with play/pause, opacity and scrim controls."
+  }
+}

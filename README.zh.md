@@ -1,5 +1,7 @@
 # dsh-video-bg
 
+> **真没想到你能做到这一步啊！领域展开——【无量空处】**
+
 [English](README.md) | 中文
 
 把本地视频作为 DeepSeek Harness 对话界面的背景循环播放——同时适配纯 Web

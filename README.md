@@ -1,5 +1,7 @@
 # dsh-video-bg
 
+> **真没想到你能做到这一步啊！领域展开——【无量空处】**
+
 English | [中文](README.zh.md)
 
 Loop a local video as the background of the DeepSeek Harness chat UI — on the
